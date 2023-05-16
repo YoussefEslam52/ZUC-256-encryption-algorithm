@@ -1,0 +1,61 @@
+from pyzuc import ZUC256
+import base64
+import os
+
+class ZUCCipher:
+    def __init__(self):
+        """
+        Initializes a new ZUCCipher object with a random 256-bit key and a random 128-bit IV.
+        """
+        self.key = os.urandom(32)
+        self.iv = os.urandom(16)
+
+    def encrypt(self, plaintext):
+        """
+        Encrypts the given plaintext using ZUC-256 encryption with the object's key and IV.
+        Returns the ciphertext and IV as base64-encoded strings.
+        """
+        # Create a ZUC-256 cipher object with the key and IV
+        cipher = ZUC256(self.key, self.iv)
+
+        # Encrypt the plaintext using the cipher object
+        ciphertext = cipher.encrypt(plaintext)
+
+        # Encode the ciphertext and IV as base64 for transmission
+        encoded_ciphertext = base64.b64encode(ciphertext).decode('utf-8')
+        encoded_iv = base64.b64encode(self.iv).decode('utf-8')
+
+        return encoded_ciphertext, encoded_iv
+
+    def decrypt(self, encoded_ciphertext, encoded_iv):
+        """
+        Decrypts the given ciphertext using ZUC-256 decryption with the object's key and the specified IV.
+        Returns the plaintext as a string.
+        """
+        # Decode the encoded ciphertext and IV from base64
+        ciphertext = base64.b64decode(encoded_ciphertext)
+        iv = base64.b64decode(encoded_iv)
+
+        # Create a ZUC-256 cipher object with the key and IV
+        cipher = ZUC256(self.key, iv)
+
+        # Decrypt the ciphertext using the cipher object
+        plaintext = cipher.decrypt(ciphertext)
+
+        return plaintext
+
+# Example usage
+cipher = ZUCCipher()
+plaintext = "This is some plaintext to encrypt."
+
+# Encrypt the plaintext using the cipher object
+ciphertext, iv = cipher.encrypt(plaintext)
+
+# Decrypt the ciphertext using the cipher object and the IV
+decrypted_plaintext = cipher.decrypt(ciphertext, iv)
+
+print("Key: ", cipher.key.hex())
+print("Plaintext: ", plaintext)
+print("Ciphertext: ", ciphertext)
+print("IV: ", iv)
+print("Decrypted plaintext: ", decrypted_plaintext.decode('utf-8'))
